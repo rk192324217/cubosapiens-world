@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUBO GPS CAM</title>
 
     <link rel="stylesheet" href="style.css">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
+    <!--
+        FIX: html2canvas removed — we use Canvas API directly in renderer.js
+        Leaflet stays here in <head> so L is available when modules load
+    -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 </head>
 
@@ -34,9 +38,13 @@
 
             <div class="image-box" id="imgBox">
 
-                <img id="img">
+                <img id="img" alt="Uploaded photo">
 
-                <div class="overlay" id="overlay">
+                <!--
+                    FIX: overlay starts hidden — shown only after image upload
+                    Prevents a floating overlay bar on an empty image box
+                -->
+                <div class="overlay hidden" id="overlay">
 
                     <div id="ovLocation"></div>
 
@@ -61,15 +69,16 @@
 
                 <label class="btn">
 
-                    Upload Image
+                    Upload
 
-                    <input type="file" id="imgInput">
+                    <!-- FIX: accept="image/*" limits file picker to images only -->
+                    <input type="file" id="imgInput" accept="image/*">
 
                 </label>
 
                 <button class="btn" id="exportBtn">
 
-                    Export Image
+                    Export
 
                 </button>
 
@@ -80,7 +89,6 @@
 
 
         <!-- RIGHT PANEL -->
-
         <section class="right">
 
 
@@ -103,7 +111,7 @@
 
                 <div class="coordBox">
 
-                    <input id="coordInput" placeholder='13°07\' 20.5"N 80°15\'01.4"E'>
+                    <input id="coordInput" placeholder="e.g. 8.077627, 77.554057">
 
                     <button id="locateBtn">
 
@@ -118,15 +126,7 @@
             </div>
 
 
-
-            <div class="panel">
-
-                <h3>Time</h3>
-
-                <input type="time" id="time">
-
-            </div>
-
+            <!-- FIX: Date panel moved above Time — matches overlay display order -->
 
             <div class="panel">
 
@@ -137,25 +137,30 @@
             </div>
 
 
+            <div class="panel">
+
+                <h3>Time</h3>
+
+                <input type="time" id="time">
+
+            </div>
+
+
         </section>
-
-
     </main>
 
-
-
-    <script src="modules/image.js"></script>
-
-    <script src="modules/map.js"></script>
-
-    <script src="modules/datetime.js"></script>
-
+    <!--
+        FIX: Script load order — overlay.js and renderer.js MUST come first.
+        map.js, datetime.js, and export.js all call functions defined in those files.
+        app.js is last as the top-level controller.
+    -->
     <script src="modules/overlay.js"></script>
-
+    <script src="modules/renderer.js"></script>
+    <script src="modules/image.js"></script>
+    <script src="modules/map.js"></script>
+    <script src="modules/datetime.js"></script>
     <script src="modules/export.js"></script>
-
     <script src="app.js"></script>
-
 
 </body>
 

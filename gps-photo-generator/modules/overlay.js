@@ -1,14 +1,14 @@
 // OVERLAY MODULE
 // Handles overlay data and rendering
 
-
 const overlayData =
 {
-location : "",
-lat : "",
-lon : "",
-date : "",
-time : ""
+location:"",
+address:"",
+lat:"",
+lon:"",
+date:"",
+time:""
 }
 
 
@@ -67,7 +67,7 @@ renderOverlay()
 
 
 
-// render overlay on image
+// render overlay DOM labels + re-render canvas preview
 
 function renderOverlay()
 {
@@ -76,15 +76,23 @@ document.getElementById("ovLocation").innerText =
 overlayData.location
 
 document.getElementById("ovLat").innerText =
-"Lat " + overlayData.lat
+overlayData.lat ? "Lat " + overlayData.lat : ""
 
 document.getElementById("ovLon").innerText =
-"Lon " + overlayData.lon
+overlayData.lon ? "Lon " + overlayData.lon : ""
 
 document.getElementById("ovDate").innerText =
 overlayData.date
 
 document.getElementById("ovTime").innerText =
 overlayData.time
+
+// FIX: trigger canvas re-render whenever overlay data changes
+const img = document.getElementById("img")
+
+if(img && img.src && img.naturalWidth > 0)
+{
+updatePreview()
+}
 
 }

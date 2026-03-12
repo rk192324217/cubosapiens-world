@@ -5,6 +5,7 @@ let map
 let marker
 
 
+
 // initialize map
 
 function initMap()
@@ -27,6 +28,7 @@ map.on("click", onMapClick)
 }
 
 
+
 // handle map click
 
 function onMapClick(e)
@@ -39,9 +41,11 @@ setMarker(lat,lon)
 
 fetchAddress(lat,lon)
 
-updateOverlay(lat,lon)
+// FIX: use setCoords() to update overlayData, not updateOverlay() which only wrote to DOM
+setCoords(lat,lon)
 
 }
+
 
 
 // place marker
@@ -59,6 +63,7 @@ marker = L.marker([lat,lon]).addTo(map)
 map.setView([lat,lon],14)
 
 }
+
 
 
 // convert DMS → decimal
@@ -81,13 +86,13 @@ return dec
 }
 
 
+
 // parse coordinate string
 
 function parseCoords(text)
 {
 
 // expected format: 13.125073, 80.251718
-
 const parts = text.split(",")
 
 if(parts.length !== 2)
@@ -110,6 +115,7 @@ return {lat,lon}
 }
 
 
+
 // locate from pasted coordinates
 
 function locateFromInput()
@@ -126,9 +132,11 @@ setMarker(res.lat,res.lon)
 
 fetchAddress(res.lat,res.lon)
 
-updateOverlay(res.lat,res.lon)
+// FIX: use setCoords() so overlayData stays in sync
+setCoords(res.lat,res.lon)
 
 }
+
 
 
 // reverse geocode coordinates → address
@@ -151,14 +159,15 @@ if(data && data.display_name)
 document.getElementById("locText").innerText =
 data.display_name
 
-document.getElementById("ovLocation").innerText =
-data.display_name
+// FIX: use setLocation() so overlayData and canvas stay in sync
+setLocation(data.display_name)
 }
 
 })
 .catch(err=>console.log(err))
 
 }
+
 
 
 // current GPS location
@@ -181,25 +190,13 @@ setMarker(lat,lon)
 
 fetchAddress(lat,lon)
 
-updateOverlay(lat,lon)
+// FIX: use setCoords() so overlayData and canvas stay in sync
+setCoords(lat,lon)
 
 })
 
 }
 
-
-// update overlay coordinate display
-
-function updateOverlay(lat,lon)
-{
-
-document.getElementById("ovLat").innerText =
-"Lat " + lat.toFixed(6)
-
-document.getElementById("ovLon").innerText =
-"Lon " + lon.toFixed(6)
-
-}
 
 
 // event listeners

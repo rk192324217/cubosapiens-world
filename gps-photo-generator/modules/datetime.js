@@ -1,7 +1,6 @@
 // DATETIME MODULE
 // Handles date, time, and timezone formatting
 
-
 const dateInput = document.getElementById("date")
 const timeInput = document.getElementById("time")
 
@@ -35,7 +34,7 @@ function formatDate(dateStr)
 
 if(!dateStr) return ""
 
-const d = new Date(dateStr)
+const d = new Date(dateStr + "T00:00:00")
 
 return d.toLocaleDateString(undefined,{
 weekday:"long",
@@ -84,7 +83,7 @@ return Intl.DateTimeFormat()
 
 
 
-// update overlay
+// update overlay data and canvas
 
 function updateDateTimeOverlay()
 {
@@ -95,11 +94,10 @@ const timeVal = timeInput.value
 const dateText = formatDate(dateVal)
 const timeText = formatTime(timeVal)
 
-document.getElementById("ovDate").innerText =
-dateText
-
-document.getElementById("ovTime").innerText =
-timeText
+// FIX: route through setDate/setTime so overlayData stays in sync
+// and canvas re-renders automatically via renderOverlay()
+setDate(dateText)
+setTime(timeText)
 
 }
 
