@@ -3,7 +3,7 @@
 
 // ─────────────────────────────────────────────────────────
 // WORKER URL — replace with your actual Worker URL
-const WORKER_URL = "https://cubo-counter.srk8115939.workers.dev/"
+const WORKER_URL = "https://cubo-counter.srk8115939.workers.dev"
 // ─────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", initApp)
