@@ -1,88 +1,129 @@
 // EXPORT MODULE
-// Handles exporting the final GPS image
+// Renders image and shows a preview modal before downloading
 
+document.addEventListener("DOMContentLoaded", () => {
 
-const exportBtn =
-document.getElementById("exportBtn")
+document
+.getElementById("renderBtn")
+.addEventListener("click", openPreviewModal)
 
-const imgBox =
-document.getElementById("imgBox")
+document
+.getElementById("modalDownload")
+.addEventListener("click", downloadFromModal)
 
+document
+.getElementById("modalClose")
+.addEventListener("click", closePreviewModal)
 
-
-// export image
-
-async function exportImage()
+// close when clicking dark backdrop
+document
+.getElementById("previewModal")
+.addEventListener("click", e => {
+if(e.target === document.getElementById("previewModal"))
 {
-
-try
-{
-
-const canvas = await html2canvas(
-imgBox,
-{
-scale:2,
-useCORS:true
+closePreviewModal()
 }
-)
+})
 
-const data =
-canvas.toDataURL("image/png")
+// close on Escape key
+document.addEventListener("keydown", e => {
+if(e.key === "Escape") closePreviewModal()
+})
 
-downloadImage(data)
-
-}
-
-catch(err)
-{
-console.error("Export failed",err)
-}
-
-}
+})
 
 
+// ── Open modal ────────────────────────────────────────
 
-// download generated image
-
-function downloadImage(dataURL)
+async function openPreviewModal()
 {
 
-const link =
-document.createElement("a")
+const originalImg = document.getElementById("img")
 
-link.href = dataURL
+if(!originalImg || !originalImg.src || originalImg.naturalWidth === 0)
+{
+alert("Please upload a photo first.")
+return
+}
 
-link.download = generateFileName()
+// Show modal with loading state
+const modal       = document.getElementById("previewModal")
+const previewImg  = document.getElementById("modalPreviewImg")
+const spinner     = document.getElementById("modalSpinner")
+const downloadBtn = document.getElementById("modalDownload")
 
+modal.classList.add("open")
+spinner.style.display    = "flex"
+previewImg.style.display = "none"
+downloadBtn.disabled     = true
+
+
+// Render
+const canvas = await renderFinalImage()
+
+spinner.style.display    = "none"
+
+if(!canvas)
+{
+alert("Render failed. Please try again.")
+closePreviewModal()
+return
+}
+
+// Show rendered preview
+previewImg.src           = canvas.toDataURL("image/jpeg", 0.95)
+previewImg.style.display = "block"
+downloadBtn.disabled     = false
+
+// Store canvas for download
+modal._canvas = canvas
+
+}
+
+
+// ── Download from modal ───────────────────────────────
+
+function downloadFromModal()
+{
+
+const modal = document.getElementById("previewModal")
+
+if(!modal._canvas) return
+
+const link      = document.createElement("a")
+link.download   = generateFileName()
+link.href       = modal._canvas.toDataURL("image/jpeg", 0.95)
 link.click()
 
 }
 
 
+// ── Close modal ───────────────────────────────────────
 
-// generate file name
-
-function generateFileName()
+function closePreviewModal()
 {
 
-const now = new Date()
+const modal = document.getElementById("previewModal")
 
-const date =
-now.toISOString().slice(0,10)
+modal.classList.remove("open")
 
-const time =
-now.toTimeString().slice(0,5).replace(":","-")
+const previewImg = document.getElementById("modalPreviewImg")
+previewImg.src   = ""
 
-return "cubo-gps-" + date + "-" + time + ".png"
+modal._canvas    = null
 
 }
 
 
+// ── File name ─────────────────────────────────────────
 
-// event listener
+function generateFileName()
+{
 
-document.addEventListener("DOMContentLoaded",()=>{
+const now  = new Date()
+const date = now.toISOString().slice(0, 10)
+const time = now.toTimeString().slice(0, 5).replace(":", "-")
 
-exportBtn.addEventListener("click",exportImage)
+return "CuboGPS-" + date + "_" + time + ".jpg"
 
-})
+}

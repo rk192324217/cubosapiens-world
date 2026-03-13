@@ -1,88 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUBO GPS CAM</title>
 
     <link rel="stylesheet" href="style.css">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
 </head>
-
 
 <body>
 
     <header>
-
         <h1>CUBO GPS CAM</h1>
-
     </header>
-
 
     <main class="app">
 
-
-        <!-- LEFT PANEL -->
-
+        <!-- ── LEFT PANEL ── -->
         <section class="left">
 
             <div class="image-box" id="imgBox">
 
-                <img id="img">
+                <img id="img" alt="Uploaded photo">
 
-                <div class="overlay" id="overlay">
+                <div class="overlay hidden" id="overlay">
 
                     <div id="ovLocation"></div>
 
                     <div class="ovRow">
-
                         <span id="ovLat"></span>
-
                         <span id="ovLon"></span>
-
                     </div>
 
                     <div id="ovDate"></div>
-
                     <div id="ovTime"></div>
 
                 </div>
 
             </div>
 
-
             <div class="leftControls">
 
                 <label class="btn">
-
-                    Upload Image
-
-                    <input type="file" id="imgInput">
-
+                    Upload
+                    <input type="file" id="imgInput" accept="image/*">
                 </label>
 
-                <button class="btn" id="exportBtn">
-
-                    Export Image
-
+                <button class="btn" id="renderBtn">
+                    ⬡ Render &amp; Preview
                 </button>
 
             </div>
 
         </section>
 
-
-
-        <!-- RIGHT PANEL -->
-
+        <!-- ── RIGHT PANEL ── -->
         <section class="right">
-
 
             <div class="panel">
 
@@ -91,72 +70,73 @@
                 <div id="map"></div>
 
                 <div class="mapBtns">
-
-                    <button id="useGPS">
-
-                        Use Current Location
-
-                    </button>
-
+                    <button id="useGPS">📍 Use Current Location</button>
                 </div>
 
-
                 <div class="coordBox">
-
-                    <input id="coordInput" placeholder='13°07\' 20.5"N 80°15\'01.4"E'>
-
-                    <button id="locateBtn">
-
-                        Locate
-
-                    </button>
-
+                    <input id="coordInput" placeholder="e.g. 13.0827, 80.2707">
+                    <button id="locateBtn">Locate</button>
                 </div>
 
                 <div id="locText"></div>
 
             </div>
 
-
-
             <div class="panel">
-
-                <h3>Time</h3>
-
-                <input type="time" id="time">
-
-            </div>
-
-
-            <div class="panel">
-
                 <h3>Date</h3>
-
                 <input type="date" id="date">
-
             </div>
 
+            <div class="panel">
+                <h3>Time</h3>
+                <input type="time" id="time">
+            </div>
 
         </section>
-
 
     </main>
 
 
+    <!-- ── PREVIEW MODAL ── -->
+    <div class="modal-backdrop" id="previewModal">
 
-    <script src="modules/image.js"></script>
+        <div class="modal">
 
-    <script src="modules/map.js"></script>
+            <div class="modal-header">
+                <h2>Preview</h2>
+                <button class="modal-close" id="modalClose" title="Close">✕</button>
+            </div>
 
-    <script src="modules/datetime.js"></script>
+            <!-- Loading spinner -->
+            <div class="modal-spinner" id="modalSpinner">
+                <div class="spinner"></div>
+                <p>Rendering…</p>
+            </div>
 
+            <!-- Rendered image -->
+            <div class="modal-preview">
+                <img id="modalPreviewImg" alt="Rendered preview">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" id="modalDownload" disabled>
+                    ⬇ Download
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Scripts: overlay + renderer must load before modules that call them -->
     <script src="modules/overlay.js"></script>
-
+    <script src="modules/renderer.js"></script>
+    <script src="modules/image.js"></script>
+    <script src="modules/map.js"></script>
+    <script src="modules/datetime.js"></script>
     <script src="modules/export.js"></script>
-
     <script src="app.js"></script>
 
-
 </body>
-
 </html>

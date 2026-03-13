@@ -1,75 +1,40 @@
 // IMAGE MODULE
-// Handles image upload and editor rendering
 
+document.addEventListener("DOMContentLoaded", () => {
 
-let imgElement = document.getElementById("img")
-let imgInput = document.getElementById("imgInput")
+const imgInput = document.getElementById("imgInput")
 
+imgInput.addEventListener("change", handleUpload)
 
-// handle image upload
+})
 
-function loadImage(file)
+function handleUpload(event)
 {
+
+const file = event.target.files[0]
 
 if(!file) return
 
-if(!file.type.startsWith("image"))
-{
-alert("Please upload a valid image")
-return
-}
-
 const reader = new FileReader()
 
+// FIX: removed duplicate reader.onload block that was outside the function
+// FIX: added img.onload → updatePreview() so canvas renders after image loads
 reader.onload = function(e)
 {
 
-imgElement.src = e.target.result
+const img = document.getElementById("img")
 
-// show overlay after image loads
-resetOverlay()
+img.src = e.target.result
+
+img.onload = function()
+{
+// FIX: reveal overlay now that an image is present
+document.getElementById("overlay").classList.remove("hidden")
+updatePreview()
+}
 
 }
 
 reader.readAsDataURL(file)
 
 }
-
-
-// reset overlay values when new image loads
-
-function resetOverlay()
-{
-
-document.getElementById("ovLocation").innerText = ""
-
-document.getElementById("ovLat").innerText = ""
-
-document.getElementById("ovLon").innerText = ""
-
-document.getElementById("ovDate").innerText = ""
-
-document.getElementById("ovTime").innerText = ""
-
-}
-
-
-// handle input change
-
-function onImageSelect(e)
-{
-
-const file = e.target.files[0]
-
-loadImage(file)
-
-}
-
-
-// event listener
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-imgInput.addEventListener("change",onImageSelect)
-
-})
