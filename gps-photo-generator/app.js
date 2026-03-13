@@ -108,7 +108,7 @@ catch(err)
 {
 console.log("Counter unavailable:", err.message)
 const el = document.getElementById("headerCounter")
-if(el) el.style.display = "none"
+if(el) el.style.display = "block"
 }
 }
 
