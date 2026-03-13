@@ -137,15 +137,55 @@ const textBlockY = MAP_Y + Math.round((MAP_SIZE - totalTextH) / 2)
 let TY = textBlockY
 
 
-// Line 1 — City, State, Country 🇮🇳  (large bold white)
-const flag      = countryCodeToFlag(overlayData.countryCode)
-// const flag = `<span class="fi fi-${overlayData.countryCode.toLowerCase()}"></span>`
+// Line 1 — City, State, Country [flag image]
+// Uses flag-icons CDN (jsdelivr) — ISO 3166-1 alpha-2 SVG
+// Canvas cannot render HTML/emoji flags — we fetch the real SVG and drawImage it
+
 const cityParts = [overlayData.city, overlayData.state, overlayData.country].filter(Boolean)
-const cityLine  = cityParts.join(", ") + (flag ? " " + flag : "")
+const cityText  = cityParts.join(", ")
+const flagCode  = (overlayData.countryCode || "").toLowerCase()  // e.g. "in", "us"
+
+// Flag dimensions — 4:3 ratio, height aligned to font cap height
+const FLAG_H   = Math.round(FS_CITY * 0.78)
+const FLAG_W   = Math.round(FLAG_H * (4 / 3))
+const FLAG_GAP = Math.round(FS_CITY * 0.25)
 
 ctx.font      = "700 " + FS_CITY + "px -apple-system, 'Helvetica Neue', Arial, sans-serif"
 ctx.fillStyle = "#ffffff"
-ctx.fillText(clipText(ctx, cityLine || overlayData.location, TEXT_W), TEXT_X, TY)
+ctx.textBaseline = "top"
+
+// Reserve space for flag so city text does not overlap it
+const availW        = TEXT_W - (flagCode ? FLAG_W + FLAG_GAP : 0)
+const cityClipped   = clipText(ctx, cityText, availW)
+const cityTextWidth = ctx.measureText(cityClipped).width
+
+// Draw city text
+ctx.fillText(cityClipped, TEXT_X, TY)
+
+// Draw flag SVG right after city text, vertically centred on the line
+if(flagCode)
+{
+const flagURL = "https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/" + flagCode + ".svg"
+const flagX   = TEXT_X + cityTextWidth + FLAG_GAP
+const flagY   = TY + Math.round((FS_CITY - FLAG_H) / 2)
+
+try
+{
+const flagImg = await loadImage(flagURL)
+
+// Slightly rounded corners on the flag
+ctx.save()
+roundRect(ctx, flagX, flagY, FLAG_W, FLAG_H, Math.round(FLAG_H * 0.10))
+ctx.clip()
+ctx.drawImage(flagImg, flagX, flagY, FLAG_W, FLAG_H)
+ctx.restore()
+}
+catch(e)
+{
+// Flag CDN unreachable — city text already drawn, skip flag silently
+console.warn("Flag image failed to load:", flagCode)
+}
+}
 
 TY += Math.round(FS_CITY * 1.30)
 
