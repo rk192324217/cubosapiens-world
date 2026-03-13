@@ -95,6 +95,9 @@ link.download   = generateFileName()
 link.href       = modal._canvas.toDataURL("image/jpeg", 0.95)
 link.click()
 
+  // increment real counter in Cloudflare KV
+  incrementDownload()
+
 }
 
 

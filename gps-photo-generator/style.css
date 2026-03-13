@@ -55,33 +55,112 @@ border-color: #555;
 
 header
 {
-text-align: center;
-padding: 20px;
-font-size: 20px;
-font-weight: 600;
+padding: 0 20px;
 background: white;
 border-bottom: 1px solid #ddd;
-height: 70px;
+height: 68px;
 display: flex;
 align-items: center;
-justify-content: center;
+justify-content: space-between;
+gap: 12px;
+position: relative;
 }
 
-header h1
+/* Left — logo */
+.header-logo
 {
-margin: 0;
-font-size: 20px;
+display: flex;
+align-items: center;
+flex-shrink: 0;
+}
+
+.header-logo-img
+{
+height: 54px;        /* bigger logo */
+width: auto;
+object-fit: contain;
+transition: opacity 0.2s ease;
+}
+
+.header-logo-img:hover
+{
+opacity: 0.85;
+}
+
+/* Center — visitor counter */
+.header-counter
+{
+display: flex;
+align-items: center;
+gap: 7px;
+background: #fff5f5;
+border: 1.5px solid #e34949;
+border-radius: 20px;
+padding: 5px 14px;
+font-size: 13px;
+font-weight: 600;
+color: #e34949;
+cursor: default;
+user-select: none;
+white-space: nowrap;
+transition: transform 0.15s ease;
+}
+
+.header-counter:hover
+{
+transform: scale(1.03);
+}
+
+body.dark .header-counter
+{
+background: rgba(227,73,73,0.12);
+border-color: #e34949;
+color: #e34949;
+}
+
+.header-counter i
+{
+font-size: 13px;
+}
+
+#counterValue
+{
+font-variant-numeric: tabular-nums;
+min-width: 32px;
+text-align: center;
+}
+
+.counter-label
+{
+font-weight: 400;
+color: #888;
+font-size: 12px;
+}
+
+/* Right — theme toggle */
+.header-toggle
+{
+background: none;
+border: 2px solid #000;
+border-radius: 8px;
+padding: 5px 12px;
+cursor: pointer;
+font-size: 13px;
+font-weight: 500;
+flex-shrink: 0;
+transition: border-color 0.15s, color 0.15s;
 }
 
 
 /* =====================
-   LAYOUT
+   LAYOUT — DESKTOP
    ===================== */
 
 .app
 {
 display: flex;
-height: calc(100vh - 70px);
+flex-direction: row;
+height: calc(100vh - 68px);
 overflow: hidden;
 }
 
@@ -96,8 +175,9 @@ flex: 2;
 padding: 20px;
 display: flex;
 flex-direction: column;
-gap: 20px;
+gap: 16px;
 min-height: 0;
+min-width: 0;
 }
 
 .image-box
@@ -114,7 +194,6 @@ box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 min-height: 0;
 }
 
-/* FIX: display:none so no alt text, no broken icon, nothing visible */
 #img
 {
 display: none;
@@ -123,13 +202,11 @@ max-height: 100%;
 object-fit: contain;
 }
 
-/* shown only after upload via image.js → img.classList.add("loaded") */
 #img.loaded
 {
 display: block;
 }
 
-/* generic .hidden utility — used on overlay before image upload */
 .hidden
 {
 display: none !important;
@@ -153,6 +230,8 @@ overflow: hidden;
 {
 display: flex;
 justify-content: space-between;
+flex-wrap: wrap;
+gap: 4px;
 }
 
 
@@ -529,4 +608,231 @@ border-top-color: #3a3a3c;
 {
 opacity: 0.45;
 cursor: not-allowed;
+}
+
+
+/* =====================
+   TABLET — 768px
+   ===================== */
+
+@media (max-width: 768px)
+{
+
+header
+{
+height: 58px;
+padding: 0 14px;
+gap: 8px;
+}
+
+.header-logo-img
+{
+height: 42px;
+}
+
+/* hide counter label text — show icon + number only */
+.counter-label
+{
+display: none;
+}
+
+.header-counter
+{
+padding: 4px 10px;
+font-size: 12px;
+gap: 5px;
+}
+
+.header-toggle
+{
+padding: 4px 10px;
+font-size: 12px;
+}
+
+/* stack layout vertically */
+.app
+{
+flex-direction: column;
+height: auto;
+min-height: calc(100vh - 58px);
+overflow-y: auto;
+}
+
+.left
+{
+flex: none;
+padding: 14px;
+gap: 12px;
+}
+
+/* image box fixed height on tablet */
+.image-box
+{
+height: 320px;
+flex: none;
+}
+
+.leftControls
+{
+display: flex;
+gap: 8px;
+}
+
+.btn
+{
+flex: 1;
+padding: 10px 12px;
+font-size: 13px;
+}
+
+.right
+{
+flex: none;
+border-left: none;
+border-top: 1px solid #ddd;
+min-width: unset;
+padding: 14px;
+}
+
+body.dark .right
+{
+border-top-color: #3a3a3c;
+border-left: none;
+}
+
+#map
+{
+height: 200px;
+}
+
+}
+
+
+/* =====================
+   MOBILE — 480px
+   ===================== */
+
+@media (max-width: 480px)
+{
+
+header
+{
+height: 54px;
+padding: 0 12px;
+gap: 6px;
+}
+
+.header-logo-img
+{
+height: 36px;
+}
+
+/* hide counter entirely on small phones — save space */
+.header-counter
+{
+display: none;
+}
+
+.header-toggle
+{
+padding: 4px 8px;
+font-size: 11px;
+border-width: 1.5px;
+}
+
+.app
+{
+min-height: calc(100vh - 54px);
+}
+
+.left
+{
+padding: 12px;
+gap: 10px;
+}
+
+/* image box taller on phone so photo is clearly visible */
+.image-box
+{
+height: 260px;
+border-radius: 10px;
+}
+
+.leftControls
+{
+gap: 8px;
+}
+
+.btn
+{
+padding: 10px 10px;
+font-size: 13px;
+border-radius: 10px;
+}
+
+.overlay
+{
+font-size: 10px;
+padding: 6px 8px;
+line-height: 1.4;
+}
+
+.right
+{
+padding: 12px;
+}
+
+.panel
+{
+margin-bottom: 18px;
+}
+
+.panel h3
+{
+font-size: 14px;
+}
+
+#map
+{
+height: 180px;
+}
+
+.mapBtns button
+{
+font-size: 13px;
+padding: 8px;
+}
+
+.coordBox input
+{
+font-size: 13px;
+padding: 7px;
+}
+
+.coordBox button
+{
+font-size: 13px;
+padding: 7px 10px;
+}
+
+input[type="time"],
+input[type="date"]
+{
+font-size: 13px;
+padding: 7px;
+}
+
+/* modal takes full screen on mobile */
+.modal
+{
+width: 100vw;
+max-height: 100vh;
+border-radius: 0;
+}
+
+.modal-preview img
+{
+max-height: 50vh;
+}
+
 }
