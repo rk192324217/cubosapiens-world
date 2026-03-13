@@ -8,89 +8,60 @@
     <title>CUBO GPS CAM</title>
 
     <link rel="stylesheet" href="style.css">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-    <!--
-        FIX: html2canvas removed — we use Canvas API directly in renderer.js
-        Leaflet stays here in <head> so L is available when modules load
-    -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
 
-
 <body>
 
     <header>
-
         <h1>CUBO GPS CAM</h1>
-
     </header>
-
 
     <main class="app">
 
-
-        <!-- LEFT PANEL -->
-
+        <!-- ── LEFT PANEL ── -->
         <section class="left">
 
             <div class="image-box" id="imgBox">
 
                 <img id="img" alt="Uploaded photo">
 
-                <!--
-                    FIX: overlay starts hidden — shown only after image upload
-                    Prevents a floating overlay bar on an empty image box
-                -->
                 <div class="overlay hidden" id="overlay">
 
                     <div id="ovLocation"></div>
 
                     <div class="ovRow">
-
                         <span id="ovLat"></span>
-
                         <span id="ovLon"></span>
-
                     </div>
 
                     <div id="ovDate"></div>
-
                     <div id="ovTime"></div>
 
                 </div>
 
             </div>
 
-
             <div class="leftControls">
 
                 <label class="btn">
-
                     Upload
-
-                    <!-- FIX: accept="image/*" limits file picker to images only -->
                     <input type="file" id="imgInput" accept="image/*">
-
                 </label>
 
-                <button class="btn" id="exportBtn">
-
-                    Export
-
+                <button class="btn" id="renderBtn">
+                    ⬡ Render &amp; Preview
                 </button>
 
             </div>
 
         </section>
 
-
-
-        <!-- RIGHT PANEL -->
+        <!-- ── RIGHT PANEL ── -->
         <section class="right">
-
 
             <div class="panel">
 
@@ -99,61 +70,66 @@
                 <div id="map"></div>
 
                 <div class="mapBtns">
-
-                    <button id="useGPS">
-
-                        Use Current Location
-
-                    </button>
-
+                    <button id="useGPS">📍 Use Current Location</button>
                 </div>
 
-
                 <div class="coordBox">
-
-                    <input id="coordInput" placeholder="e.g. 8.077627, 77.554057">
-
-                    <button id="locateBtn">
-
-                        Locate
-
-                    </button>
-
+                    <input id="coordInput" placeholder="e.g. 13.0827, 80.2707">
+                    <button id="locateBtn">Locate</button>
                 </div>
 
                 <div id="locText"></div>
 
             </div>
 
-
-            <!-- FIX: Date panel moved above Time — matches overlay display order -->
-
             <div class="panel">
-
                 <h3>Date</h3>
-
                 <input type="date" id="date">
-
             </div>
-
 
             <div class="panel">
-
                 <h3>Time</h3>
-
                 <input type="time" id="time">
-
             </div>
-
 
         </section>
+
     </main>
 
-    <!--
-        FIX: Script load order — overlay.js and renderer.js MUST come first.
-        map.js, datetime.js, and export.js all call functions defined in those files.
-        app.js is last as the top-level controller.
-    -->
+
+    <!-- ── PREVIEW MODAL ── -->
+    <div class="modal-backdrop" id="previewModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+                <h2>Preview</h2>
+                <button class="modal-close" id="modalClose" title="Close">✕</button>
+            </div>
+
+            <!-- Loading spinner -->
+            <div class="modal-spinner" id="modalSpinner">
+                <div class="spinner"></div>
+                <p>Rendering…</p>
+            </div>
+
+            <!-- Rendered image -->
+            <div class="modal-preview">
+                <img id="modalPreviewImg" alt="Rendered preview">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" id="modalDownload" disabled>
+                    ⬇ Download
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Scripts: overlay + renderer must load before modules that call them -->
     <script src="modules/overlay.js"></script>
     <script src="modules/renderer.js"></script>
     <script src="modules/image.js"></script>
@@ -163,5 +139,4 @@
     <script src="app.js"></script>
 
 </body>
-
 </html>

@@ -11,15 +11,15 @@ let marker
 function initMap()
 {
 
-const defaultPos = [20.5937,78.9629]
+const defaultPos = [20.5937, 78.9629]
 
-map = L.map("map").setView(defaultPos,5)
+map = L.map("map").setView(defaultPos, 5)
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {
-maxZoom:19,
-attribution:"© OpenStreetMap"
+maxZoom: 19,
+attribution: "© OpenStreetMap"
 }
 ).addTo(map)
 
@@ -37,12 +37,11 @@ function onMapClick(e)
 const lat = e.latlng.lat
 const lon = e.latlng.lng
 
-setMarker(lat,lon)
+setMarker(lat, lon)
 
-fetchAddress(lat,lon)
+fetchAddress(lat, lon)
 
-// FIX: use setCoords() to update overlayData, not updateOverlay() which only wrote to DOM
-setCoords(lat,lon)
+setCoords(lat, lon)
 
 }
 
@@ -50,7 +49,7 @@ setCoords(lat,lon)
 
 // place marker
 
-function setMarker(lat,lon)
+function setMarker(lat, lon)
 {
 
 if(marker)
@@ -58,30 +57,9 @@ if(marker)
 marker.remove()
 }
 
-marker = L.marker([lat,lon]).addTo(map)
+marker = L.marker([lat, lon]).addTo(map)
 
-map.setView([lat,lon],14)
-
-}
-
-
-
-// convert DMS → decimal
-
-function dmsToDecimal(deg,min,sec,dir)
-{
-
-let dec =
-Number(deg) +
-Number(min)/60 +
-Number(sec)/3600
-
-if(dir==="S" || dir==="W")
-{
-dec *= -1
-}
-
-return dec
+map.setView([lat, lon], 14)
 
 }
 
@@ -92,12 +70,11 @@ return dec
 function parseCoords(text)
 {
 
-// expected format: 13.125073, 80.251718
 const parts = text.split(",")
 
 if(parts.length !== 2)
 {
-alert("Invalid coordinate format")
+alert("Invalid coordinate format. Use: lat, lon")
 return null
 }
 
@@ -110,7 +87,7 @@ alert("Invalid coordinate numbers")
 return null
 }
 
-return {lat,lon}
+return { lat, lon }
 
 }
 
@@ -121,50 +98,54 @@ return {lat,lon}
 function locateFromInput()
 {
 
-const txt =
-document.getElementById("coordInput").value
+const txt = document.getElementById("coordInput").value
 
 const res = parseCoords(txt)
 
 if(!res) return
 
-setMarker(res.lat,res.lon)
+setMarker(res.lat, res.lon)
 
-fetchAddress(res.lat,res.lon)
+fetchAddress(res.lat, res.lon)
 
-// FIX: use setCoords() so overlayData stays in sync
-setCoords(res.lat,res.lon)
+setCoords(res.lat, res.lon)
 
 }
 
 
 
-// reverse geocode coordinates → address
+// reverse geocode → address + structured components
 
-function fetchAddress(lat,lon)
+function fetchAddress(lat, lon)
 {
 
 const url =
-"https://nominatim.openstreetmap.org/reverse?format=json&lat="
-+ lat +
-"&lon=" +
-lon
+"https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
+lat + "&lon=" + lon + "&addressdetails=1"
 
 fetch(url)
-.then(r=>r.json())
-.then(data=>{
+.then(r => r.json())
+.then(data => {
 
-if(data && data.display_name)
+if(!data) return
+
+// full address string for locText sidebar
+if(data.display_name)
 {
 document.getElementById("locText").innerText =
 data.display_name
 
-// FIX: use setLocation() so overlayData and canvas stay in sync
 setLocation(data.display_name)
 }
 
+// structured fields for overlay header line
+if(data.address)
+{
+setAddressComponents(data.address)
+}
+
 })
-.catch(err=>console.log(err))
+.catch(err => console.warn("Geocode error:", err))
 
 }
 
@@ -177,23 +158,32 @@ function useCurrentLocation()
 
 if(!navigator.geolocation)
 {
-alert("GPS not supported")
+alert("GPS not supported by this browser")
 return
 }
 
-navigator.geolocation.getCurrentPosition(pos=>{
+navigator.geolocation.getCurrentPosition(
+
+pos => {
 
 const lat = pos.coords.latitude
 const lon = pos.coords.longitude
 
-setMarker(lat,lon)
+setMarker(lat, lon)
 
-fetchAddress(lat,lon)
+fetchAddress(lat, lon)
 
-// FIX: use setCoords() so overlayData and canvas stay in sync
-setCoords(lat,lon)
+setCoords(lat, lon)
 
-})
+},
+
+err => {
+
+alert("Location access denied or unavailable")
+
+}
+
+)
 
 }
 
@@ -201,16 +191,16 @@ setCoords(lat,lon)
 
 // event listeners
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
 
 initMap()
 
 document
 .getElementById("locateBtn")
-.addEventListener("click",locateFromInput)
+.addEventListener("click", locateFromInput)
 
 document
 .getElementById("useGPS")
-.addEventListener("click",useCurrentLocation)
+.addEventListener("click", useCurrentLocation)
 
 })

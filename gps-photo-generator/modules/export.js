@@ -1,44 +1,129 @@
 // EXPORT MODULE
+// Renders image and shows a preview modal before downloading
 
 document.addEventListener("DOMContentLoaded", () => {
 
-const btn = document.getElementById("exportBtn")
+document
+.getElementById("renderBtn")
+.addEventListener("click", openPreviewModal)
 
-btn.addEventListener("click", exportImage)
+document
+.getElementById("modalDownload")
+.addEventListener("click", downloadFromModal)
+
+document
+.getElementById("modalClose")
+.addEventListener("click", closePreviewModal)
+
+// close when clicking dark backdrop
+document
+.getElementById("previewModal")
+.addEventListener("click", e => {
+if(e.target === document.getElementById("previewModal"))
+{
+closePreviewModal()
+}
+})
+
+// close on Escape key
+document.addEventListener("keydown", e => {
+if(e.key === "Escape") closePreviewModal()
+})
 
 })
 
-async function exportImage()
+
+// ── Open modal ────────────────────────────────────────
+
+async function openPreviewModal()
 {
 
-// FIX: guard against null return when no image is loaded or render is busy
-const canvas = await renderFinalImage()
+const originalImg = document.getElementById("img")
 
-if(!canvas)
+if(!originalImg || !originalImg.src || originalImg.naturalWidth === 0)
 {
-alert("Please upload an image first.")
+alert("Please upload a photo first.")
 return
 }
 
-const link = document.createElement("a")
+// Show modal with loading state
+const modal       = document.getElementById("previewModal")
+const previewImg  = document.getElementById("modalPreviewImg")
+const spinner     = document.getElementById("modalSpinner")
+const downloadBtn = document.getElementById("modalDownload")
 
-link.download = generateFileName()
+modal.classList.add("open")
+spinner.style.display    = "flex"
+previewImg.style.display = "none"
+downloadBtn.disabled     = true
 
-link.href = canvas.toDataURL("image/png")
 
+// Render
+const canvas = await renderFinalImage()
+
+spinner.style.display    = "none"
+
+if(!canvas)
+{
+alert("Render failed. Please try again.")
+closePreviewModal()
+return
+}
+
+// Show rendered preview
+previewImg.src           = canvas.toDataURL("image/jpeg", 0.95)
+previewImg.style.display = "block"
+downloadBtn.disabled     = false
+
+// Store canvas for download
+modal._canvas = canvas
+
+}
+
+
+// ── Download from modal ───────────────────────────────
+
+function downloadFromModal()
+{
+
+const modal = document.getElementById("previewModal")
+
+if(!modal._canvas) return
+
+const link      = document.createElement("a")
+link.download   = generateFileName()
+link.href       = modal._canvas.toDataURL("image/jpeg", 0.95)
 link.click()
 
 }
 
+
+// ── Close modal ───────────────────────────────────────
+
+function closePreviewModal()
+{
+
+const modal = document.getElementById("previewModal")
+
+modal.classList.remove("open")
+
+const previewImg = document.getElementById("modalPreviewImg")
+previewImg.src   = ""
+
+modal._canvas    = null
+
+}
+
+
+// ── File name ─────────────────────────────────────────
+
 function generateFileName()
 {
 
-const now = new Date()
+const now  = new Date()
+const date = now.toISOString().slice(0, 10)
+const time = now.toTimeString().slice(0, 5).replace(":", "-")
 
-const date = now.toISOString().slice(0,10)
-
-const time = now.toTimeString().slice(0,5).replace(":","-")
-
-return "CuboGPS-" + date + "_" + time + ".png"
+return "CuboGPS-" + date + "_" + time + ".jpg"
 
 }
