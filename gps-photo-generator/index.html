@@ -1,21 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUBO GPS CAM</title>
-
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 </head>
-
 <body>
-
     <header>
         <h1>CUBO GPS CAM</h1>
     </header>
@@ -27,35 +22,41 @@
 
             <div class="image-box" id="imgBox">
 
+                <!-- Hidden until image is uploaded -->
                 <img id="img" alt="Uploaded photo">
 
+                <!-- Placeholder shown before upload -->
+                <div class="img-placeholder" id="imgPlaceholder">
+                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    <p>Upload a photo to get started</p>
+                </div>
+
+                <!-- GPS overlay — hidden until image is uploaded -->
                 <div class="overlay hidden" id="overlay">
-
                     <div id="ovLocation"></div>
-
                     <div class="ovRow">
                         <span id="ovLat"></span>
                         <span id="ovLon"></span>
                     </div>
-
                     <div id="ovDate"></div>
                     <div id="ovTime"></div>
-
                 </div>
 
             </div>
 
             <div class="leftControls">
-
                 <label class="btn">
-                    Upload
+                    Upload &nbsp;<i class="fa-solid fa-upload"></i>
                     <input type="file" id="imgInput" accept="image/*">
                 </label>
-
                 <button class="btn" id="renderBtn">
-                    ⬡ Render &amp; Preview
+                    Preview&nbsp;<i class="fa-solid fa-eye"></i>
                 </button>
-
             </div>
 
         </section>
@@ -64,31 +65,29 @@
         <section class="right">
 
             <div class="panel">
-
                 <h3>Map</h3>
-
                 <div id="map"></div>
-
                 <div class="mapBtns">
-                    <button id="useGPS">📍 Use Current Location</button>
+                    <button id="useGPS">
+                        Use Current Location &nbsp;<i class="fa-solid fa-location-crosshairs"></i>
+                    </button>
                 </div>
-
                 <div class="coordBox">
                     <input id="coordInput" placeholder="e.g. 13.0827, 80.2707">
-                    <button id="locateBtn">Locate</button>
+                    <button id="locateBtn">
+                        <i class="fa-solid fa-location-dot"></i> &nbsp;Locate
+                    </button>
                 </div>
-
                 <div id="locText"></div>
-
             </div>
 
             <div class="panel">
-                <h3>Date</h3>
+                <h3>Date&nbsp;<i class="fa-solid fa-calendar-days"></i></h3>
                 <input type="date" id="date">
             </div>
 
             <div class="panel">
-                <h3>Time</h3>
+                <h3>Time&nbsp;<i class="fa-solid fa-clock"></i></h3>
                 <input type="time" id="time">
             </div>
 
@@ -96,10 +95,8 @@
 
     </main>
 
-
     <!-- ── PREVIEW MODAL ── -->
     <div class="modal-backdrop" id="previewModal">
-
         <div class="modal">
 
             <div class="modal-header">
@@ -107,27 +104,23 @@
                 <button class="modal-close" id="modalClose" title="Close">✕</button>
             </div>
 
-            <!-- Loading spinner -->
             <div class="modal-spinner" id="modalSpinner">
                 <div class="spinner"></div>
                 <p>Rendering…</p>
             </div>
 
-            <!-- Rendered image -->
             <div class="modal-preview">
                 <img id="modalPreviewImg" alt="Rendered preview">
             </div>
 
             <div class="modal-footer">
                 <button class="btn" id="modalDownload" disabled>
-                    ⬇ Download
+                    <i class="fa-solid fa-download"></i>&nbsp; Download
                 </button>
             </div>
 
         </div>
-
     </div>
-
 
     <!-- Scripts: overlay + renderer must load before modules that call them -->
     <script src="modules/overlay.js"></script>

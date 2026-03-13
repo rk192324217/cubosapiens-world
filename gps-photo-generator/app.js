@@ -50,7 +50,7 @@ toggleBtn.style.cssText =
 "top:50%;" +
 "transform:translateY(-50%);" +
 "background:none;" +
-"border:1px solid #ccc;" +
+"border:2px solid #ccc;" +
 "border-radius:8px;" +
 "padding:6px 12px;" +
 "cursor:pointer;" +
@@ -84,6 +84,8 @@ function updateToggleLabel(btn)
 
 const isDark = document.body.classList.contains("dark")
 
-btn.textContent = isDark ? "☀ Light" : "☾ Dark"
+btn.textContent = isDark ? "☀ Light" : "☾ Dark";
+btn.style.color       = isDark ? "#e34949" : "#111"
+btn.style.borderColor = isDark ? "#e34949" : "#000000"
 
 }
