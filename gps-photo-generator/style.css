@@ -66,7 +66,6 @@ gap: 12px;
 position: relative;
 }
 
-/* Left — logo */
 .header-logo
 {
 display: flex;
@@ -76,7 +75,7 @@ flex-shrink: 0;
 
 .header-logo-img
 {
-height: 54px;        /* bigger logo */
+height: 54px;
 width: auto;
 object-fit: contain;
 transition: opacity 0.2s ease;
@@ -87,7 +86,6 @@ transition: opacity 0.2s ease;
 opacity: 0.85;
 }
 
-/* Center — visitor counter */
 .header-counter
 {
 display: flex;
@@ -137,7 +135,6 @@ color: #888;
 font-size: 12px;
 }
 
-/* Right — theme toggle */
 .header-toggle
 {
 background: none;
@@ -275,6 +272,54 @@ letter-spacing: 0.2px;
 .img-placeholder.hidden
 {
 display: none;
+}
+
+
+/* =====================
+   UPLOAD ERROR
+   ===================== */
+
+#uploadError
+{
+display: none;
+flex-direction: column;
+gap: 3px;
+background: #fff3f3;
+border: 1.5px solid #e34949;
+border-radius: 10px;
+padding: 10px 14px;
+font-size: 13px;
+line-height: 1.5;
+flex-shrink: 0;
+}
+
+#uploadError strong
+{
+font-size: 13px;
+font-weight: 700;
+color: #c0392b;
+}
+
+#uploadError span
+{
+font-weight: 400;
+color: #555;
+}
+
+body.dark #uploadError
+{
+background: rgba(227,73,73,0.10);
+border-color: #e34949;
+}
+
+body.dark #uploadError strong
+{
+color: #e34949;
+}
+
+body.dark #uploadError span
+{
+color: #aaa;
 }
 
 
@@ -630,7 +675,6 @@ gap: 8px;
 height: 42px;
 }
 
-/* hide counter label text — show icon + number only */
 .counter-label
 {
 display: none;
@@ -649,7 +693,6 @@ padding: 4px 10px;
 font-size: 12px;
 }
 
-/* stack layout vertically */
 .app
 {
 flex-direction: column;
@@ -665,7 +708,6 @@ padding: 14px;
 gap: 12px;
 }
 
-/* image box fixed height on tablet */
 .image-box
 {
 height: 320px;
@@ -727,7 +769,6 @@ gap: 6px;
 height: 36px;
 }
 
-/* hide counter entirely on small phones — save space */
 .header-counter
 {
 display: none;
@@ -751,7 +792,6 @@ padding: 12px;
 gap: 10px;
 }
 
-/* image box taller on phone so photo is clearly visible */
 .image-box
 {
 height: 260px;
@@ -822,7 +862,6 @@ font-size: 13px;
 padding: 7px;
 }
 
-/* modal takes full screen on mobile */
 .modal
 {
 width: 100vw;

@@ -15,6 +15,7 @@ initializeTheme()   // 1. apply saved theme class to body
 addThemeToggle()    // 2. create toggle button
 updateLogo()        // 3. set correct logo AFTER everything is ready
 initCounters()      // 4. load counters
+initCookieBanner()  // 5. cookie consent
 }
 
 
@@ -160,4 +161,42 @@ clearInterval(timer)
 el.textContent = target.toLocaleString()
 }
 }, Math.round(duration / steps))
+}
+// ── Cookie banner ─────────────────────────────────
+
+function initCookieBanner()
+{
+if(localStorage.getItem("cookie_consent")) return
+
+setTimeout(() => {
+const banner = document.getElementById("cookieBanner")
+if(banner) banner.classList.add("visible")
+}, 900)
+
+const acceptBtn  = document.getElementById("cookieAccept")
+const declineBtn = document.getElementById("cookieDecline")
+
+if(acceptBtn)
+{
+acceptBtn.addEventListener("click", () => {
+localStorage.setItem("cookie_consent", "accepted")
+hideCookieBanner()
+})
+}
+
+if(declineBtn)
+{
+declineBtn.addEventListener("click", () => {
+localStorage.setItem("cookie_consent", "declined")
+hideCookieBanner()
+})
+}
+}
+
+function hideCookieBanner()
+{
+const banner = document.getElementById("cookieBanner")
+if(!banner) return
+banner.style.transform = "translateY(100%)"
+setTimeout(() => banner.remove(), 400)
 }
