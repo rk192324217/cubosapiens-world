@@ -1,8 +1,46 @@
-
 let isRendering = false
+
+function clamp(v, min, max)
+{
+return Math.max(min, Math.min(max, v))
+}
+
+
+// ── 🔥 NEW: Measure dynamic text height ─────────────────
+function measureTextBlockHeight(ctx, text, maxWidth, lineHeight, maxLines)
+{
+if(!text) return lineHeight
+
+const words = text.split(" ")
+let line = ""
+let lines = 0
+
+for(const word of words)
+{
+const test = line ? line + " " + word : word
+
+if(ctx.measureText(test).width > maxWidth && line)
+{
+lines++
+line = word
+if(lines >= maxLines) break
+}
+else
+{
+line = test
+}
+}
+
+if(line) lines++
+
+return Math.min(lines, maxLines) * lineHeight
+}
+
+
 async function renderFinalImage()
 {
 if(isRendering) return null
+
 const originalImg = document.getElementById("img")
 
 if(!originalImg || !originalImg.src || originalImg.naturalWidth === 0)
@@ -11,65 +49,87 @@ return null
 }
 
 isRendering = true
+
 try
 {
 const canvas = document.createElement("canvas")
 const ctx    = canvas.getContext("2d")
+
 const W = originalImg.naturalWidth
 const H = originalImg.naturalHeight
+
 canvas.width  = W
 canvas.height = H
+
 ctx.drawImage(originalImg, 0, 0, W, H)
 
-const MARGIN = Math.round(H * 0.025)
-const OVW    = Math.round(W * 0.93)
+
+// ── 🔥 GLOBAL SCALE SYSTEM ─────────────────────────────
+const BASE_WIDTH = 1000
+const scale = clamp(W / BASE_WIDTH, 0.5, 1.6)
+
+
+// ── Layout ────────────────────────────────────────────
+const MARGIN = clamp(Math.round(H * 0.025), 8, 40)
+const OVW    = clamp(Math.round(W * 0.80), 260, W - 40)
 const OVX    = Math.round((W - OVW) / 2)
 
-// ── Thumbnail size — scales with width ────────────────────
-// Wide images  (W=3000): thumb = ~22% of OVW → big thumb
-// Medium       (W=1000): thumb = ~22% of OVW → decent thumb
-// Narrow       (W=400):  thumb = ~22% of OVW → small thumb, more text room
-// Thumbnail is always square, always proportional
-const THUMB_RATIO = 0.22           // thumb width as fraction of OVW
-const MAP_SIZE    = Math.round(OVW * THUMB_RATIO)
 
-// ── Font sizes — smooth linear scale with W ───────────────
-// Formula: size = W * factor, capped at a comfortable max
-// This means every 100px of width change → proportional font change
-// Examples at key widths:
-//   W=300:  FS_CITY=15  FS_INFO=10
-//   W=500:  FS_CITY=25  FS_INFO=16
-//   W=800:  FS_CITY=40  FS_INFO=25
-//   W=1200: FS_CITY=58  FS_INFO=36  (hits cap)
-//   W=3000: FS_CITY=58  FS_INFO=36  (capped)
+// ── Overlay box ───────────────────────────────────────
+const OVH = clamp(Math.round(H * 0.22), 100, 220)
+const OVY = H - OVH - MARGIN
+const RADIUS = clamp(Math.round(16 * scale), 6, 20)
 
-const FS_CITY = Math.round(Math.min(W * 0.048, H * 0.048, 58))
-const FS_INFO = Math.round(Math.min(W * 0.030, H * 0.030, 36))
-const LH_INFO = Math.round(FS_INFO * 1.45)
 
-// ── Padding scales with font size ─────────────────────────
-const PAD = Math.round(Math.max(FS_INFO * 0.75, 6))
+// ── Thumbnail ─────────────────────────────────────────
+const MAP_SIZE = clamp(Math.round(W * 0.18 * scale), 60, 150)
 
-// ── Overlay height — driven by content ────────────────────
-// Rows: city(1) + address(2) + coords(1) + datetime(1) = 5 rows
-// city row taller than info rows
-const CONTENT_H = Math.round(FS_CITY * 1.3 + LH_INFO * 4)
-const OVH       = CONTENT_H + PAD * 2
 
-const OVY    = H - OVH - MARGIN
-const RADIUS = Math.round(Math.max(OVH * 0.055, 4))
+// ── Typography ───────────────────────────────────────
+const FS_CITY = clamp(Math.round(28 * scale), 16, 42)
+const FS_INFO = clamp(Math.round(18 * scale), 10, 24)
+const LH_INFO = Math.round(FS_INFO * 1.4)
 
-// ── Thumbnail position ────────────────────────────────────
+
+// ── Padding ──────────────────────────────────────────
+const PAD = clamp(Math.round(12 * scale), 6, 18)
+
+
+// ── Thumbnail Position ───────────────────────────────
 const MAP_X = OVX + PAD
-const MAP_Y = OVY + Math.round((OVH - MAP_SIZE) / 2)  // vertically centred
+const MAP_Y = OVY + Math.round((OVH - MAP_SIZE) / 2)
 
-// ── Text column — everything right of thumbnail ───────────
-const TEXT_X = MAP_X + MAP_SIZE + Math.round(PAD * 1.2)
-const TEXT_Y = OVY + PAD
+
+// ── Text Layout ──────────────────────────────────────
+const TEXT_X = MAP_X + MAP_SIZE + Math.round(PAD * 1.8)
 const TEXT_W = (OVX + OVW) - TEXT_X - PAD
 
 
-// ── 3. Overlay background ──────────────────────────────────
+// ── 🔥 Measure actual text height ─────────────────────
+ctx.font = FS_INFO + "px -apple-system, Arial, sans-serif"
+
+const addressHeight = measureTextBlockHeight(
+ctx,
+overlayData.location || "",
+TEXT_W,
+LH_INFO,
+2
+)
+
+const textBlockHeight =
+FS_CITY +
+addressHeight +
+LH_INFO +
+LH_INFO +
+Math.round(FS_CITY * 0.3)
+
+
+// ── PERFECT CENTER ALIGNMENT ──────────────────────────
+const CONTENT_CENTER_Y = OVY + OVH / 2
+const TEXT_Y = CONTENT_CENTER_Y - textBlockHeight / 2
+
+
+// ── Background ────────────────────────────────────────
 ctx.save()
 roundRect(ctx, OVX, OVY, OVW, OVH, RADIUS)
 ctx.fillStyle = "rgba(15, 15, 15, 0.80)"
@@ -77,9 +137,9 @@ ctx.fill()
 ctx.restore()
 
 
-// ── 4. Satellite thumbnail ─────────────────────────────────
+// ── Map Thumbnail ─────────────────────────────────────
 const lat = overlayData.lat
-const lon  = overlayData.lon
+const lon = overlayData.lon
 
 if(lat && lon)
 {
@@ -92,6 +152,7 @@ const esriURL =
 try
 {
 const mapImg = await loadImage(esriURL)
+
 ctx.save()
 roundRect(ctx, MAP_X, MAP_Y, MAP_SIZE, MAP_SIZE, RADIUS * 0.5)
 ctx.clip()
@@ -107,18 +168,16 @@ ctx.fill()
 ctx.restore()
 }
 
-// Teardrop pin centred on thumbnail
-drawLocationPin(ctx, MAP_X + MAP_SIZE / 2, MAP_Y + MAP_SIZE / 2, MAP_SIZE * 0.12)
+drawLocationPin(ctx, MAP_X + MAP_SIZE / 2, MAP_Y + MAP_SIZE / 2, MAP_SIZE * 0.1)
 }
 
 
-// ── 5. Text ────────────────────────────────────────────────
+// ── TEXT ─────────────────────────────────────────────
 ctx.textBaseline = "top"
-ctx.shadowBlur   = 0
 let TY = TEXT_Y
 
 
-// ── Line 1 — City, State, Country + Flag ──────────────────
+// ── City + Flag ──────────────────────────────────────
 const cityParts = [overlayData.city, overlayData.state, overlayData.country].filter(Boolean)
 const cityText  = cityParts.join(", ")
 const flagCode  = (overlayData.countryCode || "").toLowerCase()
@@ -127,12 +186,11 @@ const FLAG_H   = Math.round(FS_CITY * 0.70)
 const FLAG_W   = Math.round(FLAG_H * (4 / 3))
 const FLAG_GAP = Math.round(FS_CITY * 0.20)
 
-ctx.font         = "700 " + FS_CITY + "px -apple-system, 'Helvetica Neue', Arial, sans-serif"
-ctx.fillStyle    = "#ffffff"
-ctx.textBaseline = "top"
+ctx.font = "700 " + FS_CITY + "px -apple-system, Arial, sans-serif"
+ctx.fillStyle = "#ffffff"
 
-const availCityW    = TEXT_W - (flagCode ? FLAG_W + FLAG_GAP : 0)
-const cityClipped   = clipText(ctx, cityText, availCityW)
+const availCityW = TEXT_W - (flagCode ? FLAG_W + FLAG_GAP : 0)
+const cityClipped = clipText(ctx, cityText, availCityW)
 const cityTextWidth = ctx.measureText(cityClipped).width
 
 ctx.fillText(cityClipped, TEXT_X, TY)
@@ -140,12 +198,14 @@ ctx.fillText(cityClipped, TEXT_X, TY)
 if(flagCode)
 {
 const flagURL = "https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/" + flagCode + ".svg"
-const flagX   = TEXT_X + cityTextWidth + FLAG_GAP
-const flagY   = TY + Math.round((FS_CITY - FLAG_H) / 2)
+
+const flagX = TEXT_X + cityTextWidth + FLAG_GAP
+const flagY = TY + Math.round((FS_CITY - FLAG_H) / 2)
 
 try
 {
 const flagImg = await loadImage(flagURL)
+
 ctx.save()
 roundRect(ctx, flagX, flagY, FLAG_W, FLAG_H, Math.round(FLAG_H * 0.10))
 ctx.clip()
@@ -158,33 +218,27 @@ console.warn("Flag load failed:", flagCode)
 }
 }
 
-TY += Math.round(FS_CITY * 1.28)
+TY += Math.round(FS_CITY * 1.35)
 
 
-// ── Line 2 — Address wrapped up to 2 lines ────────────────
-const address = overlayData.location || ""
-
-ctx.font      = FS_INFO + "px -apple-system, 'Helvetica Neue', Arial, sans-serif"
+// ── Address ─────────────────────────────────────────
+ctx.font      = FS_INFO + "px -apple-system, Arial, sans-serif"
 ctx.fillStyle = "rgba(255,255,255,0.88)"
-TY = drawWrappedText(ctx, address, TEXT_X, TY, TEXT_W, LH_INFO, 2)
+
+TY = drawWrappedText(ctx, overlayData.location || "", TEXT_X, TY, TEXT_W, LH_INFO, 2)
 
 
-// ── Line 3 — Coordinates ──────────────────────────────────
+// ── Coordinates ─────────────────────────────────────
 if(lat && lon)
 {
 const coordLine = "Lat " + lat + "°   Long " + lon + "°"
-ctx.font      = FS_INFO + "px -apple-system, 'Helvetica Neue', Arial, sans-serif"
-ctx.fillStyle = "rgba(255,255,255,0.88)"
 ctx.fillText(clipText(ctx, coordLine, TEXT_W), TEXT_X, TY)
+TY += LH_INFO
 }
 
-TY += LH_INFO
 
-
-// ── Line 4 — Date / Time / GMT ────────────────────────────
+// ── Date Time ───────────────────────────────────────
 const dtLine = buildDateTimeLine()
-ctx.font      = FS_INFO + "px -apple-system, 'Helvetica Neue', Arial, sans-serif"
-ctx.fillStyle = "rgba(255,255,255,0.88)"
 ctx.fillText(clipText(ctx, dtLine, TEXT_W), TEXT_X, TY)
 
 
@@ -198,12 +252,10 @@ console.error("Render error:", err)
 isRendering = false
 return null
 }
-
 }
 
 
-// ── Teardrop location pin ──────────────────────────────────────────────────────
-
+// ── LOCATION PIN ─────────────────────────────────────
 function drawLocationPin(ctx, cx, cy, r)
 {
 ctx.save()
@@ -225,8 +277,7 @@ ctx.closePath()
 ctx.fillStyle = "#e53935"
 ctx.fill()
 
-ctx.shadowBlur    = 0
-ctx.shadowOffsetY = 0
+ctx.shadowBlur = 0
 ctx.beginPath()
 ctx.arc(cx, centerY, bodyR * 0.38, 0, Math.PI * 2)
 ctx.fillStyle = "white"
@@ -236,8 +287,7 @@ ctx.restore()
 }
 
 
-// ── Date/time line ─────────────────────────────────────────────────────────────
-
+// ── DATE TIME ───────────────────────────────────────
 function buildDateTimeLine()
 {
 const dateStr = document.getElementById("date").value
@@ -268,17 +318,16 @@ return [datePart, timePart, getGMTOffset()].filter(Boolean).join("  ")
 
 function getGMTOffset()
 {
-const offset    = -new Date().getTimezoneOffset()
-const sign      = offset >= 0 ? "+" : "-"
-const absOffset = Math.abs(offset)
-const hours     = String(Math.floor(absOffset / 60)).padStart(2, "0")
-const minutes   = String(absOffset % 60).padStart(2, "0")
-return "GMT" + sign + hours + ":" + minutes
+const offset = -new Date().getTimezoneOffset()
+const sign   = offset >= 0 ? "+" : "-"
+const abs    = Math.abs(offset)
+const h      = String(Math.floor(abs / 60)).padStart(2, "0")
+const m      = String(abs % 60).padStart(2, "0")
+return "GMT" + sign + h + ":" + m
 }
 
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
+// ── HELPERS ─────────────────────────────────────────
 function getBbox(lat, lon, delta)
 {
 return [
@@ -292,6 +341,7 @@ return [
 function roundRect(ctx, x, y, w, h, r)
 {
 r = Math.min(r, w / 2, h / 2)
+
 ctx.beginPath()
 ctx.moveTo(x + r, y)
 ctx.lineTo(x + w - r, y)
@@ -310,8 +360,8 @@ function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines)
 if(!text) return y + lineHeight
 
 const words = text.split(" ")
-let line    = ""
-let lines   = []
+let line = ""
+let lines = []
 
 for(const word of words)
 {
@@ -350,21 +400,23 @@ function clipText(ctx, text, maxWidth)
 {
 if(!text) return ""
 if(ctx.measureText(text).width <= maxWidth) return text
+
 while(text.length > 0 && ctx.measureText(text + "…").width > maxWidth)
 {
 text = text.slice(0, -1)
 }
+
 return text + "…"
 }
 
 function loadImage(src)
 {
 return new Promise((resolve, reject) => {
-const img       = new Image()
+const img = new Image()
 img.crossOrigin = "anonymous"
-img.onload      = () => resolve(img)
-img.onerror     = reject
-img.src         = src
+img.onload = () => resolve(img)
+img.onerror = reject
+img.src = src
 })
 }
 
@@ -372,7 +424,9 @@ async function updatePreview()
 {
 const img = document.getElementById("img")
 if(!img || !img.src || img.naturalWidth === 0) return
+
 clearTimeout(updatePreview._timer)
+
 updatePreview._timer = setTimeout(async () => {
 await renderFinalImage()
 }, 100)

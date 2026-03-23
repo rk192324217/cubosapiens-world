@@ -39,7 +39,11 @@ body.dark .image-box
 {
 background: #2c2c2e;
 }
+#locText {
+   color: #e34949 !important;
+   font-weight: 500 !important;
 
+}
 body.dark input,
 body.dark .coordBox input
 {
