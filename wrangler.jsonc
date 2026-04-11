@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cubosapiens",
+  "compatibility_date": "2026-04-11",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "gps-photo-generator"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
